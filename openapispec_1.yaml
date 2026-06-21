@@ -1,0 +1,85 @@
+openapi: 3.0.0
+info:
+  title: Move Spoofed Email to Junk
+  description: Move a spoofed analyzed email message to the Junk folder.
+  version: 1.0.0
+
+servers:
+  - url: https://graph.microsoft.com/beta
+    description: Microsoft Graph Beta API
+
+paths:
+  /security/collaboration/analyzedEmails/remediate:
+    post:
+      summary: Move spoofed email to Junk
+      description: |
+        Moves a spoofed analyzed email message to the Junk folder.
+        This operation always uses severity HIGH and action moveToJunk.
+      operationId: moveSpoofedEmailToJunk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - displayName
+                - severity
+                - action
+                - analyzedEmails
+              properties:
+                displayName:
+                  type: string
+                  description: Display name for the remediation operation
+                  example: Move spoofed email to Junk
+                description:
+                  type: string
+                  description: Description of the remediation
+                  example: Email identified as spoofed
+                severity:
+                  type: string
+                  description: Severity of the spoofed email
+                  enum:
+                    - high
+                action:
+                  type: string
+                  description: Remediation action
+                  enum:
+                    - moveToJunk
+                analyzedEmails:
+                  type: array
+                  description: List of spoofed analyzed emails to remediate
+                  items:
+                    type: object
+                    required:
+                      - networkMessageId
+                      - recipientEmailAddress
+                    properties:
+                      networkMessageId:
+                        type: string
+                        description: Network Message ID of the spoofed email
+                      recipientEmailAddress:
+                        type: string
+                        description: Recipient email address of the spoofed email
+      responses:
+        '202':
+          description: Remediation request accepted
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized - invalid or missing authentication
+        '403':
+          description: Forbidden - insufficient permissions
+      security:
+        - oauth2: []
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://login.microsoftonline.com/{tenantid}/oauth2/v2.0/token
+          scopes:
+            https://graph.microsoft.com/.default:
+              description: Access Microsoft Graph
